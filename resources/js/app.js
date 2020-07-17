@@ -10,15 +10,11 @@ Vue.config.productionTip = false;
 Vue.use(BootstrapVue);
 Vue.use(IconsPlugin);
 
-
 const app = new Vue({
     BootstrapVue,
     IconsPlugin,
     Vuex,
     router,
     store,
-    el: "#app",
-    created() {
-        //
-    }
+    el: "#app"
 });

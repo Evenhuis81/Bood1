@@ -1,8 +1,8 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
+import Vue from "vue";
+import Vuex from "vuex";
 // import modules from "./modules"
 
-Vue.use(Vuex)
+Vue.use(Vuex);
 
 export default new Vuex.Store({
     // modules,
@@ -12,23 +12,23 @@ export default new Vuex.Store({
     },
     mutations: {
         set_groceries(state, groceries) {
-            state.groceries = groceries
+            state.groceries = groceries;
         }
     },
     actions: {
         groceries({ commit }) {
-            return fetch('/api/groceries')
+            return fetch("/api/groceries")
                 .then(response => response.json())
                 .then(data => {
-                    commit('set_groceries', data)
-                    return data
-                })
+                    commit("set_groceries", data);
+                    return data;
+                });
         },
-        deleteGrocery({ }, id) {
-            return fetch('/api/groceries', {
-                method: 'PUT',
-            })
-        },
+        deleteGrocery({ dispatch }, id) {
+            return fetch("/api/groceries" + id, {
+                method: "PUT"
+            });
+        }
         // Default options are marked with *
         // fetch(url, {
         //     method: 'PUT', // *GET, POST, PUT, DELETE, etc.
@@ -45,9 +45,8 @@ export default new Vuex.Store({
         // });
         // return response.json(); // parses JSON response into native JavaScript objects
         // }
-
     },
     getters: {
         getGroceries: state => state.groceries
     }
-})
+});
