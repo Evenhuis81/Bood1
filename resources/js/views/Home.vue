@@ -1,24 +1,46 @@
 <template>
   <div>
-    <b-table @row-hovered="rowHovered" ref="table" no-sort-reset id="table-transition" :items="groceries" :fields="fields" primary-key="id" :tbody-transition-props="transProps">
+    <b-table
+      @row-hovered="rowHovered"
+      ref="table"
+      no-sort-reset
+      id="table-transition"
+      :items="groceries"
+      :fields="fields"
+      primary-key="id"
+      :tbody-transition-props="transProps"
+    >
       <template v-slot:cell(delete)="data">
-        <!-- <b-button size="sm">{{ data.field.text }}</b-button> -->
-        <!-- <div v-b-hover="handleHover" class="border rounded py-3 px-4"> -->
-          <div @mouseover="cellhover=true" @mouseleave="cellhover=false">
-        <b-icon v-if="cellhover && isHovered(data.item)" icon="x" animation="throb" font-scale="2">{{ data.value }}</b-icon>
-        <b-icon v-else icon="x">{{ data.item.id }}</b-icon>
-          </div>
-        <!-- </div> -->
+        <div @mouseover="cellhover=true" @mouseleave="cellhover=false">
+          <b-icon
+            @click="deleteRow(data.item.id)"
+            :style="{ color: (cellhover && isHovered(data.item)) ? 'red' : '' }"
+            icon="trash"
+            font-scale="1.5"
+          ></b-icon>
+        </div>
       </template>
       <template v-slot:cell(subtotal)="data">€ {{ (data.item.amount * data.item.price).toFixed(2) }}</template>
       <template v-slot:cell(price)="data">€ {{ data.value.toFixed(2) }}</template>
       <template v-slot:cell(amount)="data">
         <input type="number" min="0" max="99" v-model="data.item.amount" />
       </template>
+      <template v-slot:custom-foot="data">
+        <b-tr>
+          <b-td :colspan="data.columns / 2"></b-td>
+          <b-td style="color: green">
+            <b>Total</b>
+          </b-td>
+          <b-td style="color: green">
+            <b>€ {{ total.toFixed(2) }}</b>
+          </b-td>
+        </b-tr>
+      </template>
     </b-table>
-        <p class="text-center">
-          <b-button size="sm" @click="clearChanges()" class="mr-auto">Clear changes</b-button>
-          <b-button size="sm" @click="saveTable">Save table</b-button>
+    <p class="text-center">
+      <b-button size="sm" @click="setToZero()">Set all to 0</b-button>
+      <b-button size="sm" @click="clearChanges()" class="mx-5">Clear changes</b-button>
+      <b-button size="sm" @click="saveTable()">Save table</b-button>
     </p>
   </div>
 </template>
@@ -31,30 +53,34 @@ export default {
     return {
       cellhover: false,
       hoveredRow: null,
-      // isHovered: false,
       transProps: {
-        name: 'flip-list'
+        name: "flip-list"
       },
       fields: [
         {
           key: "name",
-          sortable: true
+          sortable: true,
+          tdClass: "align-middle",
+          footTxt: "Total"
         },
-        "description",
+        {
+          key: "description",
+          tdClass: "align-middle"
+        },
         {
           key: "price",
-          sortable: true
+          sortable: true,
+          tdClass: "align-middle"
         },
         "amount",
         {
           key: "subtotal",
-          label: "SubTotaal"
+          label: "SubTotaal",
+          tdClass: "align-middle"
         },
         {
           key: "delete",
-          label: "",
-          text: "X",
-          tdClass: "p-3"
+          tdClass: "align-middle"
         }
       ],
       groceries: [],
@@ -63,7 +89,7 @@ export default {
   },
   computed: {
     ...mapGetters(["getGroceries"]),
-    totalTotal() {
+    total() {
       let total = 0;
       this.groceries.map(grocery => {
         total += grocery.amount * grocery.price;
@@ -72,29 +98,36 @@ export default {
     }
   },
   methods: {
-    rowHovered(item){
+    deleteRow(id) {
+      let index = this.groceries.findIndex(grocery => grocery.id === id);
+      this.groceries.splice(index, 1);
+    },
+    setToZero() {
+      this.groceries.map(grocery => (grocery.amount = 0));
+    },
+    rowHovered(item) {
       this.hoveredRow = item;
       this.$refs.table.refresh();
     },
-    isHovered(item){
+    isHovered(item) {
       return item == this.hoveredRow;
     },
     info(value) {
-      console.log(value)
+      console.log(value);
     },
     handleHover(hovered) {
-      this.isHovered = hovered
+      this.isHovered = hovered;
     },
     saveTable() {
-      console.log(this.groceries)
+      console.log(this.groceries);
     },
     clearChanges() {
-      this.groceries = this.getGroceries.map(a => ({...a}));
+      this.groceries = this.getGroceries.map(a => ({ ...a }));
     }
   },
   created() {
     this.$store.dispatch("groceries").then(groceries => {
-      this.groceries = groceries.map(a => ({...a}));
+      this.groceries = groceries.map(a => ({ ...a }));
       // this.amounts = groceries.map(grocery => grocery.amount)
     });
   }
@@ -102,10 +135,7 @@ export default {
 </script>
 
 <style>
-  table#table-transition .flip-list-move {
-    transition: transform 1s;
-  }
-  .setWidth {
-    width: 60px;
-  }
+table#table-transition .flip-list-move {
+  transition: transform 1s;
+}
 </style>
