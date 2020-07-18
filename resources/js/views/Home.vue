@@ -56,9 +56,7 @@ export default {
       transProps: {
         name: "flip-list"
       },
-      changes: {
-        delete: []
-      },
+      delete: [],
       fields: [
         {
           key: "name",
@@ -99,6 +97,7 @@ export default {
   },
   methods: {
     deleteRow(id) {
+      // remove row from table array and set id in changes.delete (when saved, this gets used in backend)
       let index = this.groceries.findIndex(grocery => grocery.id === id);
       this.groceries.splice(index, 1);
       this.changes.delete.push(id);
@@ -112,9 +111,6 @@ export default {
     },
     isHovered(item) {
       return item == this.hoveredRow;
-    },
-    info(value) {
-      console.log(value);
     },
     handleHover(hovered) {
       this.isHovered = hovered;
@@ -130,13 +126,23 @@ export default {
       console.log(this.groceries);
     },
     clearChanges() {
+      // copy groceries array from store to table array (=reset)
       this.groceries = this.getGroceries.map(a => ({ ...a }));
+      // let amounts = {};
+      // this.groceries.forEach(grocery => {
+      //   let id = grocery.id;
+      //   Object.assign(amounts, { id: "0" });
+      // });
+      // this.changes.amount = amounts;
       this.changes.delete = [];
     }
   },
   created() {
+    // copy fields array to add alignment then copy over fields array
     const fieldsAdd = this.fields.map(b => ({ ...b, tdClass: "align-middle" }));
     this.fields = fieldsAdd;
+
+    // copy groceries array from store to table array
     this.$store.dispatch("groceries").then(groceries => {
       this.groceries = groceries.map(a => ({ ...a }));
     });
