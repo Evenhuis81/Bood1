@@ -38,9 +38,9 @@
       </template>
     </b-table>
     <p class="text-center">
-      <b-button size="sm" @click="setToZero()">Set all to 0</b-button>
-      <b-button size="sm" @click="clearChanges()" class="mx-5">Clear changes</b-button>
-      <b-button size="sm" @click="saveTable()">Save table</b-button>
+      <b-button variant="warning" @click="setToZero()">Set all to 0</b-button>
+      <b-button variant="danger" @click="clearChanges()" class="mx-5">Clear changes</b-button>
+      <b-button variant="success" @click="saveTable()">Save table</b-button>
     </p>
   </div>
 </template>
@@ -56,31 +56,31 @@ export default {
       transProps: {
         name: "flip-list"
       },
+      changes: {
+        delete: []
+      },
       fields: [
         {
           key: "name",
           sortable: true,
-          tdClass: "align-middle",
           footTxt: "Total"
         },
         {
-          key: "description",
-          tdClass: "align-middle"
+          key: "description"
         },
         {
           key: "price",
-          sortable: true,
-          tdClass: "align-middle"
+          sortable: true
         },
-        "amount",
+        {
+          key: "amount"
+        },
         {
           key: "subtotal",
-          label: "SubTotaal",
-          tdClass: "align-middle"
+          label: "SubTotal"
         },
         {
-          key: "delete",
-          tdClass: "align-middle"
+          key: "delete"
         }
       ],
       groceries: [],
@@ -101,6 +101,7 @@ export default {
     deleteRow(id) {
       let index = this.groceries.findIndex(grocery => grocery.id === id);
       this.groceries.splice(index, 1);
+      this.changes.delete.push(id);
     },
     setToZero() {
       this.groceries.map(grocery => (grocery.amount = 0));
@@ -119,16 +120,25 @@ export default {
       this.isHovered = hovered;
     },
     saveTable() {
+      // check if input has changed
+      if (
+        JSON.stringify(this.groceries) === JSON.stringify(this.getGroceries)
+      ) {
+        window.alert("You haven't changed anything!");
+        return;
+      }
       console.log(this.groceries);
     },
     clearChanges() {
       this.groceries = this.getGroceries.map(a => ({ ...a }));
+      this.changes.delete = [];
     }
   },
   created() {
+    const fieldsAdd = this.fields.map(b => ({ ...b, tdClass: "align-middle" }));
+    this.fields = fieldsAdd;
     this.$store.dispatch("groceries").then(groceries => {
       this.groceries = groceries.map(a => ({ ...a }));
-      // this.amounts = groceries.map(grocery => grocery.amount)
     });
   }
 };

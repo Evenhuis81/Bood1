@@ -20,6 +20,7 @@ export default new Vuex.Store({
             return fetch("/api/groceries")
                 .then(response => response.json())
                 .then(data => {
+                    data.forEach(dat => (dat.amount = dat.amount.toString()));
                     commit("set_groceries", data);
                     return data;
                 });
