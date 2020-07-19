@@ -61,7 +61,6 @@ class GroceryController extends Controller
      */
     public function updateGroceries($amounts)
     {
-        // dd($amounts);
         foreach ($amounts as $id => $amount) {
             $grocery = Grocery::find($amount['id']);
             $grocery->amount = $amount['amount'];

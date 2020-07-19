@@ -10,7 +10,6 @@
       primary-key="id"
       :tbody-transition-props="transProps"
     >
-
       <template v-slot:cell(price)="data">€ {{ data.value.toFixed(2) }}</template>
 
       <template v-slot:cell(amount)="data">
@@ -46,8 +45,9 @@
           </b-td>
         </b-tr>
       </template>
-
     </b-table>
+
+    <router-view></router-view>
   </div>
 </template>
 
@@ -87,7 +87,7 @@ export default {
           key: "delete"
         }
       ],
-      groceries: [],
+      groceries: []
     };
   },
   computed: {
@@ -135,19 +135,21 @@ export default {
         return;
       }
       // check amount changes: 1st get only db rows (none newly added)
-      let dbRows = this.groceries.filter(grocery => !grocery.new)
+      let dbRows = this.groceries.filter(grocery => !grocery.new);
       // 2nd compare amounts from table with db (db = groceries from store)
-      var amounts = []
+      var amounts = [];
       dbRows.forEach(row => {
-        let index = this.getGroceries.findIndex(grocery => grocery.id === row.id)
+        let index = this.getGroceries.findIndex(
+          grocery => grocery.id === row.id
+        );
         if (row.amount !== this.getGroceries[index].amount) {
-          amounts.push({ id: row.id, amount: row.amount })
+          amounts.push({ id: row.id, amount: row.amount });
         }
-      })
+      });
       // create payload (deletes and/or amounts)
-      var payload = { amounts, deletes: this.delete }
+      var payload = { amounts, deletes: this.delete };
 
-      this.persistTable(payload)
+      this.persistTable(payload);
     },
     clearChanges() {
       // copy groceries array from store to table array (=reset)
