@@ -10,6 +10,15 @@
       primary-key="id"
       :tbody-transition-props="transProps"
     >
+
+      <template v-slot:cell(price)="data">€ {{ data.value.toFixed(2) }}</template>
+
+      <template v-slot:cell(amount)="data">
+        <input type="number" min="0" max="99" v-model="data.item.amount" />
+      </template>
+
+      <template v-slot:cell(subtotal)="data">€ {{ (data.item.amount * data.item.price).toFixed(2) }}</template>
+
       <template v-slot:cell(delete)="data">
         <div @mouseover="cellhover=true" @mouseleave="cellhover=false">
           <b-icon-trash
@@ -18,14 +27,9 @@
           ></b-icon-trash>
         </div>
       </template>
-      <template v-slot:cell(subtotal)="data">€ {{ (data.item.amount * data.item.price).toFixed(2) }}</template>
-      <template v-slot:cell(price)="data">€ {{ data.value.toFixed(2) }}</template>
-      <template v-slot:cell(amount)="data">
-        <input type="number" min="0" max="99" v-model="data.item.amount" />
-      </template>
+
       <template v-slot:custom-foot>
         <b-tr>
-          <!-- <b-td :colspan="data.columns / 2"></b-td> -->
           <b-td></b-td>
           <b-td>
             <p class="text-center">
@@ -42,6 +46,7 @@
           </b-td>
         </b-tr>
       </template>
+
     </b-table>
   </div>
 </template>
@@ -97,11 +102,16 @@ export default {
   },
   methods: {
     ...mapActions(["persistTable"]),
+    addRow() {
+      //
+    },
     deleteRow(id) {
       // remove row from table array and set id (id gets used in backend to delete from DB)
       let index = this.groceries.findIndex(grocery => grocery.id === id);
       this.groceries.splice(index, 1);
       this.delete.push(id);
+      // subTotal refresh (why not reactive?)
+      this.$refs.table.refresh();
     },
     setToZero() {
       this.groceries.map(grocery => (grocery.amount = "0"));
@@ -127,7 +137,6 @@ export default {
       // check amount changes: 1st get only db rows (none newly added)
       let dbRows = this.groceries.filter(grocery => !grocery.new)
       // 2nd compare amounts from table with db (db = groceries from store)
-      // var amounts = []
       var amounts = []
       dbRows.forEach(row => {
         let index = this.getGroceries.findIndex(grocery => grocery.id === row.id)
@@ -137,11 +146,6 @@ export default {
       })
       // create payload (deletes and/or amounts)
       var payload = { amounts, deletes: this.delete }
-      console.log(payload.amounts)
-      console.log(payload.deletes)
-      console.log(this.delete)
-      // var payload = []
-      // payload.push({ amounts }, { deletes: this.delete })
 
       this.persistTable(payload)
     },

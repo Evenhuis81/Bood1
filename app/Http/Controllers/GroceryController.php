@@ -36,7 +36,37 @@ class GroceryController extends Controller
      */
     public function store(Request $request)
     {
-        dd($request->all());
+        $deletes = $request->input('deletes');
+        $amounts = $request->input('amounts');
+        if (count($deletes)) $this->deleteGroceries($deletes);
+        if (count($amounts)) $this->updateGroceries($amounts);
+    }
+
+    /**
+     * Remove the specified resource(s) from storage.
+     *
+     * @param  GroceryIds(array)
+     * @return 
+     */
+    public function deleteGroceries($deletes)
+    {
+        Grocery::destroy($deletes);
+    }
+
+    /**
+     * Remove the specified resource(s) from storage.
+     *
+     * @param  GroceryIds(array)
+     * @return 
+     */
+    public function updateGroceries($amounts)
+    {
+        // dd($amounts);
+        foreach ($amounts as $id => $amount) {
+            $grocery = Grocery::find($amount['id']);
+            $grocery->amount = $amount['amount'];
+            $grocery->save();
+        }
     }
 
     /**
