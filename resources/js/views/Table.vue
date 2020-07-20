@@ -32,9 +32,11 @@
           <b-td></b-td>
           <b-td>
             <p class="text-center">
-              <b-button variant="warning" @click="setToZero()">Set amounts to 0</b-button>
+              <b-button variant="outline-primary" v-b-modal.modal-prevent-closing>Add grocery</b-button>
+              <b-button variant="warning" @click="setToZero()" class="ml-5">Set amounts to 0</b-button>
               <b-button variant="danger" @click="clearChanges()" class="mx-5">Clear changes</b-button>
               <b-button variant="success" @click="saveTable()">Save table</b-button>
+              <b-modal id="modal">Hello From My Modal!</b-modal>
             </p>
           </b-td>
           <b-td style="color: green">
@@ -46,8 +48,44 @@
         </b-tr>
       </template>
     </b-table>
+    <!-- <router-view></router-view> -->
+    <b-modal
+      id="modal-prevent-closing"
+      ref="modal"
+      title="Add grocery to table"
+      @show="resetModal"
+      @hidden="resetModal"
+      @ok="handleOk"
+      :busy="loading"
+    >
+      <form ref="form" @submit.stop.prevent="addRow">
+        <b-form-group id="input-group-1" label="Product Name:" label-for="input-1">
+          <b-form-input id="input-1" v-model="form.name" placeholder="Enter name" required></b-form-input>
+        </b-form-group>
 
-    <router-view></router-view>
+        <b-form-group id="input-group-2" label="Description:" label-for="input-2">
+          <b-form-input
+            id="input-2"
+            v-model="form.description"
+            placeholder="Enter description"
+            required
+          ></b-form-input>
+        </b-form-group>
+
+        <b-form-group id="input-group-3" label="Price:" label-for="input-3">
+          <b-form-input type="number" step="0.01" id="input-3" v-model="form.price" required></b-form-input>
+        </b-form-group>
+        <b-form-text id="input-3-help">format: 1.23</b-form-text>
+
+        <b-form-group id="input-group-4" label="Amount:" label-for="input-4">
+          <b-form-input type="number" id="input-4" v-model="form.amount" placeholder="0" required></b-form-input>
+          <b-form-text id="input-4-help">max: 99</b-form-text>
+        </b-form-group>
+      </form>
+      <p class="text-right">
+        <b-spinner v-if="loading"></b-spinner>
+      </p>
+    </b-modal>
   </div>
 </template>
 
@@ -62,36 +100,20 @@ export default {
       transProps: {
         name: "flip-list"
       },
+      form: {
+        name: "",
+        description: "",
+        price: 0.0,
+        amount: 0
+      },
+      loading: false,
       delete: [],
-      fields: [
-        {
-          key: "name",
-          sortable: true,
-          footTxt: "Total"
-        },
-        {
-          key: "description"
-        },
-        {
-          key: "price",
-          sortable: true
-        },
-        {
-          key: "amount"
-        },
-        {
-          key: "subtotal",
-          label: "SubTotal"
-        },
-        {
-          key: "delete"
-        }
-      ],
+      fields: [],
       groceries: []
     };
   },
   computed: {
-    ...mapGetters(["getGroceries"]),
+    ...mapGetters(["getGroceries", "getFields"]),
     total() {
       let total = 0;
       this.groceries.map(grocery => {
@@ -101,9 +123,46 @@ export default {
     }
   },
   methods: {
-    ...mapActions(["persistTable"]),
+    ...mapActions(["persistTable", "persistRow"]),
+    checkFormValidity() {
+      const valid = this.$refs.form.checkValidity();
+      return valid;
+    },
+    resetModal() {
+      this.form.name = "";
+      this.form.description = "";
+      this.form.price = 0;
+      this.form.amount = 0;
+      this.loading = false;
+    },
+    handleOk(bvModalEvt) {
+      // Prevent modal from closing
+      bvModalEvt.preventDefault();
+      // Trigger submit handler
+      this.addRow();
+    },
     addRow() {
-      //
+      // Exit when the form isn't valid
+      if (!this.checkFormValidity()) {
+        return;
+      }
+      this.loading = true;
+      this.persistRow(this.form)
+        .then(response => {
+          console.log("succes");
+        })
+        .catch(error => {
+          console.log("error");
+          // console.error("Error:", error);
+        })
+        .finally(() => {
+          console.log("finally");
+          this.loading = false;
+        });
+
+      // this.$nextTick(() => {
+      //   this.$bvModal.hide("modal-prevent-closing");
+      // });
     },
     deleteRow(id) {
       // remove row from table array and set id (id gets used in backend to delete from DB)
@@ -160,7 +219,10 @@ export default {
   },
   created() {
     // copy fields array to add alignment then copy over fields array
-    const fieldsAdd = this.fields.map(b => ({ ...b, tdClass: "align-middle" }));
+    const fieldsAdd = this.getFields.map(b => ({
+      ...b,
+      tdClass: "align-middle"
+    }));
     this.fields = fieldsAdd;
     // copy groceries array from store to table array
     this.$store.dispatch("groceries").then(groceries => {

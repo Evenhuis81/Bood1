@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Grocery;
 use Illuminate\Http\Request;
+use App\Http\Requests\addRow;
 
 class GroceryController extends Controller
 {
@@ -26,6 +27,28 @@ class GroceryController extends Controller
     public function create()
     {
         //
+    }
+
+        /**
+     * Add a new row to table
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function add(Request $request)
+    {
+        // request form not working with fetch (302 response but statuscode 200)
+
+        $validated = $request->validate([
+            'name' => 'required|string|min:2',
+            'description' => 'required|string|min:5',
+            'price' => 'required|integer',
+            'amount' => 'required|integer|max:99'
+        ]);
+        if ($grocery = Grocery::create($validated)) {
+                return response()->json($grocery, 201);
+        } else {
+            return response()->json(['errors' => ['server' => ['Error creating Category']]], 500);
+        }
     }
 
     /**
