@@ -6,7 +6,6 @@ import { componentsPlugin } from "bootstrap-vue";
 Vue.use(Vuex);
 
 export default new Vuex.Store({
-    // modules,
     state: {
         fields: [
             {
@@ -58,22 +57,18 @@ export default new Vuex.Store({
                 body: JSON.stringify(payload)
             })
         },
-        persistRow({ }, payload) {
-            return fetch("api/groceries/add", {
+        async persistRow({ }, payload) {
+            const response = await fetch("api/groceries/add", {
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 method: "POST",
-                redirect: "error",
                 body: JSON.stringify(payload)
-            }).then(response => {
-                console.log()
-                response.json()
             })
-                .then(data => {
-                    console.log('2nd then')
-                    return data
-                })
+            if (!response.ok) {
+                throw response.json()
+            }
+            return response.json()
         }
     },
     getters: {

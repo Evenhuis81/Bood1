@@ -36,15 +36,18 @@ class GroceryController extends Controller
      */
     public function add(Request $request)
     {
-        // request form not working with fetch (302 response but statuscode 200)
-
-        $validated = $request->validate([
+        $validator = \Validator::make($request->all(), [
             'name' => 'required|string|min:2',
             'description' => 'required|string|min:5',
             'price' => 'required|integer',
             'amount' => 'required|integer|max:99'
         ]);
-        if ($grocery = Grocery::create($validated)) {
+        if($validator->fails())
+             {
+               $errors = $validator->errors();
+                 return response()->json($errors, 422);
+            }
+        if ($grocery = Grocery::create($validator->getData())) {
                 return response()->json($grocery, 201);
         } else {
             return response()->json(['errors' => ['server' => ['Error creating Category']]], 500);

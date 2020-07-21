@@ -10,7 +10,7 @@
       primary-key="id"
       :tbody-transition-props="transProps"
     >
-      <template v-slot:cell(price)="data">€ {{ data.value.toFixed(2) }}</template>
+      <template v-slot:cell(price)="data">{{ data.value ? "€ " + data.value.toFixed(2) : "Free" }}</template>
 
       <template v-slot:cell(amount)="data">
         <input type="number" min="0" max="99" v-model="data.item.amount" />
@@ -48,7 +48,6 @@
         </b-tr>
       </template>
     </b-table>
-    <!-- <router-view></router-view> -->
     <b-modal
       id="modal-prevent-closing"
       ref="modal"
@@ -124,6 +123,9 @@ export default {
   },
   methods: {
     ...mapActions(["persistTable", "persistRow"]),
+    log(data) {
+      console.log(data);
+    },
     checkFormValidity() {
       const valid = this.$refs.form.checkValidity();
       return valid;
@@ -149,16 +151,15 @@ export default {
       this.loading = true;
       this.persistRow(this.form)
         .then(response => {
-          console.log("succes");
+          console.log(response);
         })
         .catch(error => {
-          console.log("error");
-          // console.error("Error:", error);
-        })
-        .finally(() => {
-          console.log("finally");
-          this.loading = false;
+          console.log(error);
         });
+      // .finally(() => {
+      //   console.log("finally");
+      //   this.loading = false;
+      // });
 
       // this.$nextTick(() => {
       //   this.$bvModal.hide("modal-prevent-closing");
@@ -228,6 +229,7 @@ export default {
     this.$store.dispatch("groceries").then(groceries => {
       this.groceries = groceries.map(a => ({ ...a }));
     });
+    // error handling wanted / needed ?
   }
 };
 </script>
