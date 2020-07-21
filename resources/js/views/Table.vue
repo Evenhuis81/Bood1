@@ -10,7 +10,12 @@
       primary-key="id"
       :tbody-transition-props="transProps"
     >
+<<<<<<< HEAD
       <template v-slot:cell(price)="data">{{ data.value ? "€ " + data.value.toFixed(2) : "Free" }}</template>
+=======
+      <!-- TypeError: data.value.toFixed is not a function -->
+      <template v-slot:cell(price)="data">€ {{ data.value.toFixed(2) }}</template> 
+>>>>>>> 49eaaefb03fb5743b3e84aa128e8c03327c1b9dc
 
       <template v-slot:cell(amount)="data">
         <input type="number" min="0" max="99" v-model="data.item.amount" />

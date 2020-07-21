@@ -34,6 +34,7 @@ export default new Vuex.Store({
         groceries: [],
     },
     mutations: {
+        // gebruik camelCase functienamen
         set_groceries(state, groceries) {
             state.groceries = groceries;
         }
